@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "poppy-company-support-example"
+version = "0.1.0"
+license = "AGPL-3.0-only"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+description = "Independent local company plugin for the Poppy execution controls onboarding exercise"
+dependencies = ["poppy-execution-controls>=0.1.0"]
+
+[tool.setuptools.packages.find]
+include = ["company_support*"]

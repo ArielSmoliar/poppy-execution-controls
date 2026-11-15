@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.10", "3.13"]
+        include:
+          - os: ubuntu-latest
+            python-version: "3.11"
+          - os: ubuntu-latest
+            python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install developer dependencies
+        run: python -m pip install -e '.[dev]'
+      - name: Lint and test
+        run: |
+          ruff check .
+          python -m pytest -q
+      - name: Build package and independent company plugin
+        run: |
+          python -m build
+          python -m build --wheel --outdir dist examples/company_onboarding
+      - name: Install wheels outside the source environment
+        shell: bash
+        run: |
+          python -m venv "$RUNNER_TEMP/controls-venv"
+          "$RUNNER_TEMP/controls-venv/bin/python" -m pip install \
+            dist/poppy_execution_controls-*.whl dist/poppy_company_support_example-*.whl
+          "$RUNNER_TEMP/controls-venv/bin/python" -m pip check
+          "$RUNNER_TEMP/controls-venv/bin/python" -I -c \
+            'import importlib.util; import poppy_controls; assert importlib.util.find_spec("loco") is None'
+      - name: Exercise installed workflow and crash recovery
+        run: |
+          "$RUNNER_TEMP/controls-venv/bin/python" -I \
+            examples/company_onboarding/audit.py --output "$RUNNER_TEMP/controls-audit"
+      - name: Save distributions and verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: controls-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            dist/
+            ${{ runner.temp }}/controls-audit/

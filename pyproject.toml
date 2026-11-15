@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "poppy-execution-controls"
+version = "0.1.0"
+description = "Independent company-side execution controls for the Personal Agent Protocol"
+readme = "README.md"
+license = "AGPL-3.0-only"
+license-files = ["LICENSE", "NOTICE.md"]
+requires-python = ">=3.10"
+authors = [{name = "Ariel Smoliar"}]
+dependencies = [
+    "starlette>=0.41,<1",
+    "uvicorn>=0.32,<1",
+    "PyJWT[crypto]>=2.10,<3",
+    "httpx>=0.27,<1",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: POSIX",
+    "Framework :: AsyncIO",
+]
+
+[project.scripts]
+poppy-controls = "poppy_controls.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.4", "build>=1.2"]
+
+[project.urls]
+Repository = "https://github.com/ArielSmoliar/poppy-execution-controls"
+Issues = "https://github.com/ArielSmoliar/poppy-execution-controls/issues"
+Documentation = "https://github.com/ArielSmoliar/poppy-execution-controls/blob/main/docs/execution-controls.md"
+
+[tool.setuptools.packages.find]
+include = ["poppy_controls*"]
+
+[tool.setuptools.package-data]
+poppy_controls = ["*.md"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
